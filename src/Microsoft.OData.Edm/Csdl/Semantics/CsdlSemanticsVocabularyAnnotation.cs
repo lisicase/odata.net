@@ -26,6 +26,7 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
         private readonly CsdlSemanticsAnnotations annotationsContext;
         private readonly Cache<CsdlSemanticsVocabularyAnnotation, IEdmExpression> valueCache = new Cache<CsdlSemanticsVocabularyAnnotation, IEdmExpression>();
         private static readonly Func<CsdlSemanticsVocabularyAnnotation, IEdmExpression> ComputeValueFunc = (me) => me.ComputeValue();
+        private readonly bool usesDefault;
 
         private readonly Cache<CsdlSemanticsVocabularyAnnotation, IEdmTerm> termCache = new Cache<CsdlSemanticsVocabularyAnnotation, IEdmTerm>();
         private static readonly Func<CsdlSemanticsVocabularyAnnotation, IEdmTerm> ComputeTermFunc = (me) => me.ComputeTerm();
@@ -43,6 +44,7 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
             this.qualifier = qualifier ?? annotation.Qualifier;
             this.targetContext = targetContext;
             this.annotationsContext = annotationsContext;
+            this.usesDefault = false;
         }
 
         public CsdlSemanticsSchema Schema { get; }
@@ -55,6 +57,15 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
         public string Qualifier
         {
             get { return this.qualifier; }
+        }
+
+        /// <summary>
+        /// Gets whether the annotation uses a default value
+        /// (not defined with a provided value).
+        /// </summary>
+        public bool UsesDefault
+        {
+            get { return this.usesDefault; }
         }
 
         public override CsdlSemanticsModel Model

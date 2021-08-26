@@ -504,7 +504,10 @@ namespace Microsoft.OData.Edm.Csdl.Serialization
             this.WriteOptionalAttribute(CsdlConstants.Attribute_Qualifier, annotation.Qualifier, EdmValueWriter.StringAsXml);
             if (isInline)
             {
-                this.WriteInlineExpression(annotation.Value);
+                if (!annotation.UsesDefault) // interface doesn't have UsesDefault -> I added it
+                {
+                    this.WriteInlineExpression(annotation.Value);
+                }                
             }
         }
 
