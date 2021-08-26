@@ -30,5 +30,11 @@ namespace Microsoft.OData.Edm.Vocabularies
         /// Gets the expression producing the value of the annotation.
         /// </summary>
         IEdmExpression Value { get; }
+
+        /// <summary>
+        /// Gets whether the annotation uses a default value
+        /// (not defined with a provided value).
+        /// </summary>
+        bool UsesDefault { get; }
     }
 }
