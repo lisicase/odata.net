@@ -341,6 +341,9 @@ namespace Microsoft.OData.Edm.Csdl
                         model.SetEdmVersion(edmVersion);
                     }
 
+                    // Note: Considered manually replacing expressions after adding the terms to the model
+                    // so I could initialize them with default values. (Would need to replace because
+                    // the annotation.Value property is readonly.) However, this is somewhat expensive/complex.
                     /*IEnumerable<IEdmVocabularyAnnotation> annotations = model.VocabularyAnnotations;
                     for (int i = 0; i < annotations.Count(); i++)
                     {

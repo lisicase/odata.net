@@ -642,7 +642,13 @@ namespace Microsoft.OData.Edm
         protected virtual void ProcessAnnotation(IEdmVocabularyAnnotation annotation)
         {
             this.ProcessVocabularyAnnotation(annotation);
-            this.VisitExpression(annotation.Value);
+            if (!annotation.UsesDefault)
+            {
+                this.VisitExpression(annotation.Value);
+            } else
+            {
+                this.VisitExpression(new EdmStringConstant(annotation.Term.DefaultValue));
+            }
         }
 
         protected virtual void ProcessPropertyValueBinding(IEdmPropertyValueBinding binding)
