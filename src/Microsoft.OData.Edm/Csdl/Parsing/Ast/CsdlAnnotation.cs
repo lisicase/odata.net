@@ -14,6 +14,7 @@ namespace Microsoft.OData.Edm.Csdl.Parsing.Ast
         private readonly CsdlExpressionBase expression;
         private readonly string qualifier;
         private readonly string term;
+        private readonly bool usesDefault;
 
         public CsdlAnnotation(string term, string qualifier, CsdlExpressionBase expression, CsdlLocation location)
             : base(location)
@@ -21,6 +22,7 @@ namespace Microsoft.OData.Edm.Csdl.Parsing.Ast
             this.expression = expression;
             this.qualifier = qualifier;
             this.term = term;
+            this.usesDefault = expression == null;
         }
 
         public CsdlExpressionBase Expression
@@ -36,6 +38,11 @@ namespace Microsoft.OData.Edm.Csdl.Parsing.Ast
         public string Term
         {
             get { return this.term; }
+        }
+
+        public bool UsesDefault
+        {
+            get { return this.usesDefault; }
         }
     }
 }

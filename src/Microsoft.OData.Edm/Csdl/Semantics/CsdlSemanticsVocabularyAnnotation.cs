@@ -26,7 +26,6 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
         private readonly CsdlSemanticsAnnotations annotationsContext;
         private readonly Cache<CsdlSemanticsVocabularyAnnotation, IEdmExpression> valueCache = new Cache<CsdlSemanticsVocabularyAnnotation, IEdmExpression>();
         private static readonly Func<CsdlSemanticsVocabularyAnnotation, IEdmExpression> ComputeValueFunc = (me) => me.ComputeValue();
-        private readonly bool usesDefault;
 
         private readonly Cache<CsdlSemanticsVocabularyAnnotation, IEdmTerm> termCache = new Cache<CsdlSemanticsVocabularyAnnotation, IEdmTerm>();
         private static readonly Func<CsdlSemanticsVocabularyAnnotation, IEdmTerm> ComputeTermFunc = (me) => me.ComputeTerm();
@@ -44,7 +43,6 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
             this.qualifier = qualifier ?? annotation.Qualifier;
             this.targetContext = targetContext;
             this.annotationsContext = annotationsContext;
-            this.usesDefault = false;
         }
 
         public CsdlSemanticsSchema Schema { get; }
@@ -65,7 +63,7 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
         /// </summary>
         public bool UsesDefault
         {
-            get { return this.usesDefault; }
+            get { return this.Annotation.UsesDefault; }
         }
 
         public override CsdlSemanticsModel Model
@@ -138,14 +136,29 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
         private IEdmExpression ComputeValue()
         {
             IEdmTypeReference termType = Term is UnresolvedVocabularyTerm ? null : Term.Type;
-            CsdlExpressionBase adjustedExpression = AdjustStringConstantUsingTermType((this.Annotation).Expression, termType);
+            /*CsdlExpressionBase adjustedExpression;
+            if (!this.Annotation.UsesDefault)
+            {
+                adjustedExpression = AdjustStringConstantUsingTermType((this.Annotation).Expression, termType);
+            } else
+            {
+                adjustedExpression = AdjustStringConstantUsingTermType(this.Term.DefaultValue, termType);
+            }*/
 
+            /*if (!this.Annotation.UsesDefault)
+            {
+                var defaultExpression = new CsdlSemanticsStringConstantExpression(Term.DefaultValue, this.Schema);
+                return CsdlSemanticsModel.WrapExpression(defaultExpression, TargetBindingContext, this.Schema);
+            }*/
+
+            CsdlExpressionBase adjustedExpression = AdjustStringConstantUsingTermType((this.Annotation).Expression, termType);
             return CsdlSemanticsModel.WrapExpression(adjustedExpression, TargetBindingContext, this.Schema);
         }
 
         private static CsdlExpressionBase AdjustStringConstantUsingTermType(CsdlExpressionBase expression, IEdmTypeReference termType)
         {
             if (expression == null || termType == null)
+            // if (expression == null || (expression != null && termType == null))
             {
                 return expression;
             }
