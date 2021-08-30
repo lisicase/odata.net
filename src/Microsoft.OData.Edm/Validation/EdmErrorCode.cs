@@ -1384,6 +1384,12 @@ namespace Microsoft.OData.Edm.Validation
         AnnotationApplyToNotAllowedAnnotatable = 400,
 
         /// <summary>
+        /// The vocabulary annotation has an unspecified value and uses a term without a default value --
+        /// should have at least one.
+        /// </summary>
+        ExpressionMissingValueOrTermWithDefaultValue = 401,
+
+        /// <summary>
         /// Invalid $Key value.
         /// </summary>
         InvalidKeyValue,

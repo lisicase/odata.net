@@ -136,15 +136,7 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
         private IEdmExpression ComputeValue()
         {
             IEdmTypeReference termType = Term is UnresolvedVocabularyTerm ? null : Term.Type;
-            /*CsdlExpressionBase adjustedExpression;
-            if (!this.Annotation.UsesDefault)
-            {
-                adjustedExpression = AdjustStringConstantUsingTermType((this.Annotation).Expression, termType);
-            } else
-            {
-                adjustedExpression = AdjustStringConstantUsingTermType(this.Term.DefaultValue, termType);
-            }*/
-
+            // Note: Attempted to create a wrapped version for the term's default value, but could not access said value.
             /*if (!this.Annotation.UsesDefault)
             {
                 var defaultExpression = new CsdlSemanticsStringConstantExpression(Term.DefaultValue, this.Schema);
@@ -157,9 +149,7 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
 
         private static CsdlExpressionBase AdjustStringConstantUsingTermType(CsdlExpressionBase expression, IEdmTypeReference termType)
         {
-            if (expression == null || termType == null)
-            // if (expression == null || (expression != null && termType == null))
-            {
+            if (expression == null || termType == null)            {
                 return expression;
             }
 

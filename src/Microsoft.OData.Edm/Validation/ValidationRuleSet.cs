@@ -67,6 +67,7 @@ namespace Microsoft.OData.Edm.Validation
                 ValidationRules.StringTypeReferenceStringUnboundedNotValidForMaxLength,
                 ValidationRules.ImmediateValueAnnotationElementAnnotationIsValid,
                 ValidationRules.VocabularyAnnotationAssertCorrectExpressionType,
+                ValidationRules.VocabularyAnnotationUseDefaultTermMustHaveDefaultValue,
                 ValidationRules.IfExpressionAssertCorrectTestType,
                 ValidationRules.CollectionExpressionAllElementsCorrectType,
                 ValidationRules.RecordExpressionPropertiesMatchType,

@@ -1828,7 +1828,7 @@ namespace Microsoft.OData.Edm.Validation
                 }
                 else if (annotation.Term.DefaultValue != null)
                 {
-                    //followup.Add(new EdmStringConstant(annotation.Term.DefaultValue));
+                    followup.Add(new EdmStringConstant(annotation.Term.DefaultValue));
                 }
                 else
                 {

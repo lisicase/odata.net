@@ -2485,15 +2485,34 @@ namespace Microsoft.OData.Edm.Validation
                 (context, annotation) =>
                 {
                     IEnumerable<EdmError> errors;
-                    if (!annotation.Value.TryCast(annotation.Term.Type, out errors))
+                    if (!annotation.UsesDefault)
                     {
-                        foreach (EdmError error in errors)
+                        if (!annotation.Value.TryCast(annotation.Term.Type, out errors))
                         {
-                            if (error.ErrorCode != EdmErrorCode.RecordExpressionMissingRequiredProperty)
+                            foreach (EdmError error in errors)
                             {
-                                context.AddError(error);
+                                if (error.ErrorCode != EdmErrorCode.RecordExpressionMissingRequiredProperty)
+                                {
+                                    context.AddError(error);
+                                }
                             }
                         }
+                    }
+                });
+
+        /// <summary>
+        /// Validates that if a vocabulary annotation doesn't have a value, it should declare a type with a default value.
+        /// </summary>
+        public static readonly ValidationRule<IEdmVocabularyAnnotation> VocabularyAnnotationUseDefaultTermMustHaveDefaultValue =
+            new ValidationRule<IEdmVocabularyAnnotation>(
+                (context, annotation) =>
+                {
+                    if (annotation.UsesDefault && annotation.Term.DefaultValue == null)
+                    {
+                        context.AddError(
+                            annotation.Location(),
+                            EdmErrorCode.ExpressionMissingValueOrTermWithDefaultValue,
+                            "Annotation expressions must specify a value or use a term with a specified default value.");
                     }
                 });
 

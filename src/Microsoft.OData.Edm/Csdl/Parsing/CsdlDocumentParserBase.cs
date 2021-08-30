@@ -365,14 +365,13 @@ namespace Microsoft.OData.Edm.Csdl.Parsing
             CsdlExpressionBase expression = this.ParseAnnotationExpression(element, childValues);
 
 
-            // if expression is null, set it to term's default value
-            if (expression == null)
+            // Note: Attempted to set the expression to the term's default value,
+            // but there wasn't a good way to access that value -- just the term's name.
+            /* (expression == null)
             {
-                //IEdmTerm defaultTerm = element.FindTerm("NS.MyDefaultTerm");
-                //Assert.Equal("This is a test", defaultTerm.DefaultValue);
-                XmlAttributeInfo termComponent = element.Attributes[CsdlConstants.Attribute_Term]; // my attempt to start getting to term's default value
-                //termComponent. // doesn't have UsesDefault
-            }
+                XmlAttributeInfo termComponent = element.Attributes[CsdlConstants.Attribute_Term];
+                //termComponent. // doesn't have DefaultValue
+            }*/
 
             return new CsdlAnnotation(term, qualifier, expression, element.Location);
         }

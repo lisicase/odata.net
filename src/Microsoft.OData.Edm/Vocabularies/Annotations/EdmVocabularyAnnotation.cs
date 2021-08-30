@@ -52,17 +52,17 @@ namespace Microsoft.OData.Edm.Vocabularies
         }
 
         /// <summary>
-        /// NEW: Initializes a new instance of the EdmVocabularyAnnotation class
+        /// Initializes a new instance of the EdmVocabularyAnnotation class
         /// to the default value.
         /// </summary>
         /// <param name=“target”>Element the annotation applies to.</param>
         /// <param name=“term”>Term bound by the annotation</param>
         public EdmVocabularyAnnotation(IEdmVocabularyAnnotatable target, IEdmTerm term)
-            //: this(target, term, null, new EdmStringConstant(term.DefaultValue))
         {
             // Check arguments
             if (term.DefaultValue == null) // throw error if no default value
             {
+                // Note: I'm not sure which is the better way of throwing the exception:
                 //throw new ArgumentNullException("value");
                 EdmUtil.CheckArgumentNull(new EdmStringConstant(null), "value");
             }
@@ -77,31 +77,35 @@ namespace Microsoft.OData.Edm.Vocabularies
             this.target = target;
             this.term = term;
             this.qualifier = null;
-            //this.value = BuildDefaultValue(term);
-            this.value = new EdmStringConstant(term.DefaultValue);
+            //this.value = BuildDefaultValue(term); // Note: Eventually this method will parse the default value
+            this.value = new EdmStringConstant(term.DefaultValue); // Note: temporarily only supporting Strings
             this.usesDefault = true;
         }
 
+        /// <summary>
+        /// Parses a <paramref name="defaultValue"/> into an IEdmExpression value of the correct type.
+        /// </summary>
+        /// <param name=“typeReference”>The type of value.</param>
+        /// <param name=“defaultValue”>Original default value.</param>
+        /// <returns>An IEdmExpression of type <paramref name="typeReference".</paramref></returns>
         /*private static IEdmExpression BuildDefaultValue(IEdmTypeReference typeReference, string defaultValue)
         {
             //string defaultValue = term.DefaultValue;
             EdmTypeKind termTypeKind = typeReference.TypeKind();
 
+            // Create constants for the corresponding types
             switch(termTypeKind)
             {
                 case EdmTypeKind.Primitive:
                     return BuildPrimitiveValue(typeReference.AsPrimitive(), defaultValue);
-
                 case EdmTypeKind.Enum:
-
-                    // EdmEnumMemberExpression
-                    // do the enum express
-                    return new EdmEnumMemberExpression(....);
-
+                    // TODO: return new EdmEnumMemberExpression(....);
                 case EdmTypeKind.Complex:
+                    // TODO
                 case EdmTypeKind.Entity:
+                    // Example:
                     // {
-                    //   "City":"Remodn",
+                    //   "City":"Redmond",
                     //   "Street": "156TH, AVE..."
                     // }
                     var properties = ParseObject(defaultValue);
@@ -114,16 +118,14 @@ namespace Microsoft.OData.Edm.Vocabularies
 
                     // build the properties expression one by one
                     return new EdmRecordExpression(....);
-
                 case EdmTypeKind.Collection:
                     IEdmCollectionTypeReference collectionType = (IEdmCollectionTypeReference)typeReference;
                     IEdmTypeReference elementType = collectionType.ElementType();
-                    // Be sure is it in the scope?
-                    // If ti's in the scope
+                    // If it's in the scope:
                     // term.DefaultValue could be a JSON string
                     // [5, 6, 9]
-                    // [{"city":"red,[]mond", },{}]
-                    // Have to parse the JSON array into Items
+                    // [{"city":["redmond","seattle"]},{}]
+                    // Have to recursively parse the JSON array into items
 
                     var items = ParseCollection(defaultValue);
                     IList<IEdmExpression> itemExpressions = new List<IEdmExpression>();
@@ -135,40 +137,18 @@ namespace Microsoft.OData.Edm.Vocabularies
 
                     return new EdmCollectionExpression(elementType, itemExpressions);
 
-                case EdmTypeKind.TypeDefinition:
-                    ....
-
-
-            }*/
-
-            //return new EdmNavigationPropertyPathExpression(defaultValue);
-
-            //IEdmExpression defaultValueExp = new EdmStringConstant(defaultValue);
-
-            /*if (object.Equals(termTypeKind, IEdmExpression.BinaryConstant))
-            {
-                return new EdmBinaryConstant(System.Binary.Parse(defaultValue));
+                //case EdmTypeKind.TypeDefinition:
+                //    ....
+                // Note: Need to have cases for the following types:
+                // DateTimeOffsetConstant, DecimalConstant, FloatingConstant, GuidConstant, IntegerConstant,
+                // StringConstant, DurationConstant, Null, Record, Collection, Path, If, Cast, IsType,
+                // FunctionApplication, LabeledExpressionReference, Labeled, PropertyPath, NavigationPropertyPath,
+                // DateConstant, TimeOfDayConstant, EnumMember, AnnotationPath
             }
-            else if (object.Equals(termTypeKind, IEdmExpression.BooleanConstant))
-            {
-                return new EdmBooleanConstant(System.Boolean.Parse(defaultValue));
-            }
-            // ...
-            else
-            {
-                return new EdmStringConstant(defaultValue);
-            }
-
-
-            // DateTimeOffsetConstant, DecimalConstant, FloatingConstant, GuidConstant, IntegerConstant,
-            // StringConstant, DurationConstant, Null, Record, Collection, Path, If, Cast, IsType,
-            // FunctionApplication, LabeledExpressionReference, Labeled, PropertyPath, NavigationPropertyPath,
-            // DateConstant, TimeOfDayConstant, EnumMember, AnnotationPath
-
-            //return defaultValueExp;
         }*/
 
-        /* static IDictionary<string, string> ParseObject(string defaultValue)
+        // Parse an object from a string
+        /*private static IDictionary<string, string> ParseObject(string defaultValue)
         {
             // parse the JSON array into items
             // "[5, 6, 8]"  => return "5", "6", "8"
@@ -176,6 +156,7 @@ namespace Microsoft.OData.Edm.Vocabularies
             return null;
         }
 
+        // Parse a collection from a string
         private static IEnumerable<string> ParseCollection(string defaultValue)
         {
             // parse the JSON array into items
@@ -184,6 +165,7 @@ namespace Microsoft.OData.Edm.Vocabularies
             return null;
         }*/
 
+        // Return an IEdmExpression for a primitive value from a string
         /*private static IEdmExpression BuildPrimitiveValue(IEdmPrimitiveTypeReference reference, string defaultValue)
         {
             switch (reference.PrimitiveKind())
@@ -206,31 +188,37 @@ namespace Microsoft.OData.Edm.Vocabularies
                     this.ProcessTemporalTypeReference(reference.AsTemporal());
                     break;
                 case EdmPrimitiveTypeKind.Boolean:
-                    // add code to create bollean cont
+                    // TODO: return constant
                     break;
                 case EdmPrimitiveTypeKind.Byte:
-                    // add code to creat 
+                    // TODO: return constant
                 case EdmPrimitiveTypeKind.Double:
+                    // TODO: return constant
                     break;
                 case EdmPrimitiveTypeKind.Guid:
-                    // add code to create Guid Contant
+                    // TODO: return constant
                     break;
                 case EdmPrimitiveTypeKind.Int16:
+                    // TODO: return constant
                     break;
                 case EdmPrimitiveTypeKind.Int32:
+                    // TODO: return constant
                     break;
                 case EdmPrimitiveTypeKind.Int64:
+                    // TODO: return constant
                     break;
                 case EdmPrimitiveTypeKind.SByte:
+                    // TODO: return constant
                     break;
                 case EdmPrimitiveTypeKind.Single:
+                    // TODO: return constant
                     break;
                 case EdmPrimitiveTypeKind.Date:
+                    // TODO: return constant
                     break;
 
-                    // below type kinds are not supported for expression?
+                    // Note: Ignoring these for now - should they be supported for expressions?
                 case EdmPrimitiveTypeKind.Stream:
-                    ///fkasdlkjfasdlfjdsal;jflaj
                 case EdmPrimitiveTypeKind.Geography:
                 case EdmPrimitiveTypeKind.GeographyPoint:
                 case EdmPrimitiveTypeKind.GeographyLineString:
@@ -250,12 +238,12 @@ namespace Microsoft.OData.Edm.Vocabularies
                 case EdmPrimitiveTypeKind.PrimitiveType:
                 case EdmPrimitiveTypeKind.None:
                 default:
-                    // Throw exception here for notsupported tyep kind
+                    // Throw exception here for not supported TypeKind
                     throw new InvalidOperationException(Edm.Strings.UnknownEnumVal_PrimitiveKind(reference.PrimitiveKind().ToString()));
             }
         }*/
 
-        /* This constructor is ambiguous with the other three-param constructor...
+        /* Note: This constructor is ambiguous with the other three-param constructor...
         /// <summary>
         /// NEW: Initializes a new instance of the EdmVocabularyAnnotation class 
         /// to the default value.

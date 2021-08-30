@@ -429,29 +429,23 @@ namespace Microsoft.OData.Edm.Tests.Csdl
                      "</Schema>" +
                    "</edmx:DataServices>" +
                  "</edmx:Edmx>";
+            // Parse into CSDL
             var model = CsdlReader.Parse(XElement.Parse(csdl).CreateReader());
             IEdmTerm defaultTerm = model.FindTerm("NS.MyDefaultTerm");
             Assert.Equal("This is a test", defaultTerm.DefaultValue);
-            IEnumerable<IEdmVocabularyAnnotation> annotations = model.VocabularyAnnotations; // in debugger: Errors/Term/Value for [0] and [1]: "Cannot evaluate expression because the code of the current method is optimized"
+            IEnumerable<IEdmVocabularyAnnotation> annotations = model.VocabularyAnnotations;
             Assert.Equal(2, annotations.Count());
             IEdmVocabularyAnnotation annotationWithSpecifiedValue = annotations.ElementAt(0);
             IEdmVocabularyAnnotation annotationWithDefaultValue = annotations.ElementAt(1);
             Assert.False(annotationWithSpecifiedValue.UsesDefault);
             Assert.True(annotationWithDefaultValue.UsesDefault);
 
-            //IEdmExpression defaultAnnotationValue = annotationWithDefaultValue.Value;
-            //Assert.Equal("This is a test", annotationWithDefaultValue.Value);
-            //IEdmExpression test = annotationWithSpecifiedValue.Value;
-            //Assert.Equal("abc/efg", annotationWithSpecifiedValue.Value.ToString);
-            //Assert.Equal("abc/efg", annotationWithSpecifiedValue.Value.ToString());
-            //System.Diagnostics.Debug.WriteLine("test 1");
+            // Validate model
             IEnumerable<EdmError> errors;
             bool validated = model.Validate(out errors);
             Assert.True(validated);
 
-            //System.Diagnostics.Debug.WriteLine("test 2");
-
-            // Act & Assert for XML
+            // Act & Assert for Reserialized XML
             WriteAndVerifyXml(model, "<?xml version=\"1.0\" encoding=\"utf-16\"?>" +
              "<edmx:Edmx Version=\"4.0\" xmlns:edmx=\"http://docs.oasis-open.org/odata/ns/edmx\">" +
                "<edmx:DataServices>" +
@@ -465,22 +459,6 @@ namespace Microsoft.OData.Edm.Tests.Csdl
                  "</Schema>" +
                "</edmx:DataServices>" +
              "</edmx:Edmx>");
-
-
-            //IEdmTerm defaultTerm2 = model.FindDeclaredTerm("NS.DefaultTerm"); // null
-
-            /*var setA = model.FindDeclaredNavigationSource("Root");
-            var target = setA.NavigationPropertyBindings.First().Target;
-            Assert.True(target is IEdmContainedEntitySet);
-            Assert.Equal("SetB", target.Name);
-            var targetSegments = target.Path.PathSegments.ToList();
-            Assert.Equal(2, targetSegments.Count());
-            Assert.Equal("Root", targetSegments[0]);
-            Assert.Equal("SetB", targetSegments[1]);
-            var pathSegments = setA.NavigationPropertyBindings.First().Path.PathSegments.ToList();
-            Assert.Equal(2, pathSegments.Count());
-            Assert.Equal("EntityA", pathSegments[0]);
-            Assert.Equal("EntityAToB", pathSegments[1]);*/
         }
 
         [Fact]

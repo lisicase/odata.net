@@ -14,7 +14,7 @@ namespace Microsoft.OData.Edm.Csdl.Parsing.Ast
         private readonly CsdlExpressionBase expression;
         private readonly string qualifier;
         private readonly string term;
-        private readonly bool usesDefault;
+        private readonly bool usesDefault; // Note: I may take off this property again if it's not needed for the implementation
 
         public CsdlAnnotation(string term, string qualifier, CsdlExpressionBase expression, CsdlLocation location)
             : base(location)
@@ -22,7 +22,7 @@ namespace Microsoft.OData.Edm.Csdl.Parsing.Ast
             this.expression = expression;
             this.qualifier = qualifier;
             this.term = term;
-            this.usesDefault = expression == null;
+            this.usesDefault = expression == null; // if the expression is missing, we want the term's default value
         }
 
         public CsdlExpressionBase Expression
