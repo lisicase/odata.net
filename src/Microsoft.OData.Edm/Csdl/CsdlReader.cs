@@ -340,6 +340,18 @@ namespace Microsoft.OData.Edm.Csdl
                     {
                         model.SetEdmVersion(edmVersion);
                     }
+
+                    /*IEnumerable<IEdmVocabularyAnnotation> annotations = model.VocabularyAnnotations;
+                    for (int i = 0; i < annotations.Count(); i++)
+                    {
+                        IEdmVocabularyAnnotation currAnnotation = annotations.ElementAt(i);
+                        if (currAnnotation.UsesDefault)
+                        {
+                            IEdmVocabularyAnnotation replacementValue = new EdmExpression(...);
+                            IEdmVocabularyAnnotation replacementAnnotation = new IEdmExpression(...);
+                            annotations.SetElement(i, replacementAnnotation);
+                        }
+                    }*/
                 }
                 else
                 {

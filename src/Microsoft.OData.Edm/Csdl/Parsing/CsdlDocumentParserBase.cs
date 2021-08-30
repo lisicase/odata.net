@@ -364,6 +364,16 @@ namespace Microsoft.OData.Edm.Csdl.Parsing
             string qualifier = Optional(CsdlConstants.Attribute_Qualifier);
             CsdlExpressionBase expression = this.ParseAnnotationExpression(element, childValues);
 
+
+            // if expression is null, set it to term's default value
+            if (expression == null)
+            {
+                //IEdmTerm defaultTerm = element.FindTerm("NS.MyDefaultTerm");
+                //Assert.Equal("This is a test", defaultTerm.DefaultValue);
+                XmlAttributeInfo termComponent = element.Attributes[CsdlConstants.Attribute_Term]; // my attempt to start getting to term's default value
+                //termComponent. // doesn't have UsesDefault
+            }
+
             return new CsdlAnnotation(term, qualifier, expression, element.Location);
         }
 

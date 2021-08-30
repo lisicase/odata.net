@@ -413,6 +413,77 @@ namespace Microsoft.OData.Edm.Tests.Csdl
         }
 
         [Fact]
+        public void ReadAnnotationWithoutSpecifiedValueAndUseDefault()
+        {
+            var csdl
+                = "<?xml version=\"1.0\" encoding=\"utf-16\"?>" +
+                 "<edmx:Edmx Version=\"4.0\" xmlns:edmx=\"http://docs.oasis-open.org/odata/ns/edmx\">" +
+                   "<edmx:DataServices>" +
+                     "<Schema Namespace=\"NS\" xmlns=\"http://docs.oasis-open.org/odata/ns/edm\">" +
+                       "<ComplexType Name=\"Complex\">" +
+                         "<Annotation Term=\"NS.MyAnnotationPathTerm\" AnnotationPath=\"abc/efg\" />" +
+                         "<Annotation Term=\"NS.MyDefaultTerm\" />" + // does not specify value
+                       "</ComplexType>" +
+                       "<Term Name=\"MyAnnotationPathTerm\" Type=\"Edm.AnnotationPath\" Nullable=\"false\" />" +
+                       "<Term Name=\"MyDefaultTerm\" Type=\"Edm.String\" DefaultValue=\"This is a test\" AppliesTo=\"Property Term\" Nullable=\"false\" />" +
+                     "</Schema>" +
+                   "</edmx:DataServices>" +
+                 "</edmx:Edmx>";
+            var model = CsdlReader.Parse(XElement.Parse(csdl).CreateReader());
+            IEdmTerm defaultTerm = model.FindTerm("NS.MyDefaultTerm");
+            Assert.Equal("This is a test", defaultTerm.DefaultValue);
+            IEnumerable<IEdmVocabularyAnnotation> annotations = model.VocabularyAnnotations; // in debugger: Errors/Term/Value for [0] and [1]: "Cannot evaluate expression because the code of the current method is optimized"
+            Assert.Equal(2, annotations.Count());
+            IEdmVocabularyAnnotation annotationWithSpecifiedValue = annotations.ElementAt(0);
+            IEdmVocabularyAnnotation annotationWithDefaultValue = annotations.ElementAt(1);
+            Assert.False(annotationWithSpecifiedValue.UsesDefault);
+            Assert.True(annotationWithDefaultValue.UsesDefault);
+
+            //IEdmExpression defaultAnnotationValue = annotationWithDefaultValue.Value;
+            //Assert.Equal("This is a test", annotationWithDefaultValue.Value);
+            //IEdmExpression test = annotationWithSpecifiedValue.Value;
+            //Assert.Equal("abc/efg", annotationWithSpecifiedValue.Value.ToString);
+            //Assert.Equal("abc/efg", annotationWithSpecifiedValue.Value.ToString());
+            //System.Diagnostics.Debug.WriteLine("test 1");
+            IEnumerable<EdmError> errors;
+            bool validated = model.Validate(out errors);
+            Assert.True(validated);
+
+            //System.Diagnostics.Debug.WriteLine("test 2");
+
+            // Act & Assert for XML
+            WriteAndVerifyXml(model, "<?xml version=\"1.0\" encoding=\"utf-16\"?>" +
+             "<edmx:Edmx Version=\"4.0\" xmlns:edmx=\"http://docs.oasis-open.org/odata/ns/edmx\">" +
+               "<edmx:DataServices>" +
+                 "<Schema Namespace=\"NS\" xmlns=\"http://docs.oasis-open.org/odata/ns/edm\">" +
+                   "<ComplexType Name=\"Complex\">" +
+                     "<Annotation Term=\"NS.MyAnnotationPathTerm\" AnnotationPath=\"abc/efg\" />" +
+                     "<Annotation Term=\"NS.MyDefaultTerm\" />" + // no longer has value
+                   "</ComplexType>" +
+                   "<Term Name=\"MyAnnotationPathTerm\" Type=\"Edm.AnnotationPath\" Nullable=\"false\" />" +
+                   "<Term Name=\"MyDefaultTerm\" Type=\"Edm.String\" DefaultValue=\"This is a test\" AppliesTo=\"Property Term\" Nullable=\"false\" />" +
+                 "</Schema>" +
+               "</edmx:DataServices>" +
+             "</edmx:Edmx>");
+
+
+            //IEdmTerm defaultTerm2 = model.FindDeclaredTerm("NS.DefaultTerm"); // null
+
+            /*var setA = model.FindDeclaredNavigationSource("Root");
+            var target = setA.NavigationPropertyBindings.First().Target;
+            Assert.True(target is IEdmContainedEntitySet);
+            Assert.Equal("SetB", target.Name);
+            var targetSegments = target.Path.PathSegments.ToList();
+            Assert.Equal(2, targetSegments.Count());
+            Assert.Equal("Root", targetSegments[0]);
+            Assert.Equal("SetB", targetSegments[1]);
+            var pathSegments = setA.NavigationPropertyBindings.First().Path.PathSegments.ToList();
+            Assert.Equal(2, pathSegments.Count());
+            Assert.Equal("EntityA", pathSegments[0]);
+            Assert.Equal("EntityAToB", pathSegments[1]);*/
+        }
+
+        [Fact]
         public void ParsingValidXmlWithNoReferencesShouldSucceed()
         {
             this.RunValidTest(CsdlReader.Parse);
@@ -1698,6 +1769,25 @@ namespace Microsoft.OData.Edm.Tests.Csdl
             // this is not imported because the Other.Types namespace is not referenced by the permissionsCsdl model
             var personType = model.FindType("Other.Types.Person");
             Assert.Null(personType);
+        }
+
+        private void WriteAndVerifyXml(IEdmModel model, string expected, CsdlTarget target = CsdlTarget.OData)
+        {
+            using (StringWriter sw = new StringWriter())
+            {
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Encoding = System.Text.Encoding.UTF8;
+
+                using (XmlWriter xw = XmlWriter.Create(sw, settings))
+                {
+                    IEnumerable<EdmError> errors;
+                    CsdlWriter.TryWriteCsdl(model, xw, target, out errors);
+                    xw.Flush();
+                }
+
+                string actual = sw.ToString();
+                Assert.Equal(expected, actual);
+            }
         }
     }
 }

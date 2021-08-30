@@ -2243,8 +2243,7 @@ namespace Microsoft.OData.Edm.Tests.Csdl
             Assert.Throws<ArgumentNullException>(() => annotation = new EdmVocabularyAnnotation(complex, term1));
 
             IEnumerable<EdmError> errors;
-            bool test = model.Validate(out errors);
-            Assert.True(test);
+            Assert.True(model.Validate(out errors));
 
             // Act & Assert for XML
             WriteAndVerifyXml(model, "<?xml version=\"1.0\" encoding=\"utf-16\"?>" +
@@ -2260,6 +2259,29 @@ namespace Microsoft.OData.Edm.Tests.Csdl
                  "</Schema>" +
                "</edmx:DataServices>" +
              "</edmx:Edmx>");
+
+            // Act & Assert for JSON - for some reason, doesn't list the type for MyDefaultTerm
+            /*WriteAndVerifyJson(model, @"{
+  ""$Version"": ""4.0"",
+  ""NS"": {
+    ""Complex"": {
+      ""$Kind"": ""ComplexType"",
+      ""@NS.MyAnnotationPathTerm"": ""abc/efg"",
+      ""@NS.MyDefaultTerm"": ""This is a test""
+    },
+    ""MyAnnotationPathTerm"": {
+      ""$Kind"": ""Term"",
+      ""$Type"": ""Edm.AnnotationPath""
+    },
+    ""MyDefaultTerm"": {
+      ""$Kind"": ""Term"",
+      ""$AppliesTo"": [
+        ""Property Term""
+      ],
+      ""$DefaultValue"": ""This is a test""
+    }
+  }
+}");*/
         }
 
         [Fact]
