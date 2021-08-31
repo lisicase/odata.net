@@ -1826,10 +1826,6 @@ namespace Microsoft.OData.Edm.Validation
                 {
                     followup.Add(annotation.Value);
                 }
-                else if (annotation.Term.DefaultValue != null)
-                {
-                    followup.Add(new EdmStringConstant(annotation.Term.DefaultValue));
-                }
                 else
                 {
                     CollectErrors(CreatePropertyMustNotBeNullError(annotation, "Value"), ref errors);

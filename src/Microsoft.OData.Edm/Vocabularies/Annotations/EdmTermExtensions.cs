@@ -1,94 +1,32 @@
-//---------------------------------------------------------------------
-// <copyright file="EdmVocabularyAnnotation.cs" company="Microsoft">
+ï»¿//---------------------------------------------------------------------
+// <copyright file="EdmTermExtensions.cs" company="Microsoft">
 //      Copyright (C) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 // </copyright>
 //---------------------------------------------------------------------
 
-using Microsoft.Data.OData;
-using Microsoft.OData.Edm.Csdl;
-using System.Collections.Generic;
+using Microsoft.OData.Edm;
+using Microsoft.OData.Edm.Csdl.CsdlSemantics;
 
 namespace Microsoft.OData.Edm.Vocabularies
 {
-    /// <summary>
-    /// Represents an EDM annotation with an immediate value.
-    /// </summary>
-    public class EdmVocabularyAnnotation : EdmElement, IEdmVocabularyAnnotation
+#if false // backup
+    internal static class EdmTermExtensions
     {
-        private readonly IEdmVocabularyAnnotatable target;
-        private readonly IEdmTerm term;
-        private readonly string qualifier;
-        private readonly IEdmExpression value;
-        private readonly bool usesDefault;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EdmVocabularyAnnotation"/> class.
-        /// </summary>
-        /// <param name="target">Element the annotation applies to.</param>
-        /// <param name="term">Term bound by the annotation.</param>
-        /// <param name="value">Expression producing the value of the annotation.</param>
-        public EdmVocabularyAnnotation(IEdmVocabularyAnnotatable target, IEdmTerm term, IEdmExpression value)
-            : this(target, term, null, value)
+        public static IEdmExpression GetDefaultExpression(this IEdmModel model, IEdmTerm term)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EdmVocabularyAnnotation"/> class.
-        /// </summary>
-        /// <param name="target">Element the annotation applies to.</param>
-        /// <param name="term">Term bound by the annotation.</param>
-        /// <param name="qualifier">Qualifier used to discriminate between multiple bindings of the same property or type.</param>
-        /// <param name="value">Expression producing the value of the annotation.</param>
-        public EdmVocabularyAnnotation(IEdmVocabularyAnnotatable target, IEdmTerm term, string qualifier, IEdmExpression value)
-        {
-            EdmUtil.CheckArgumentNull(target, "target");
-            EdmUtil.CheckArgumentNull(term, "term");
-            EdmUtil.CheckArgumentNull(value, "value");
-
-            this.target = target;
-            this.term = term;
-            this.qualifier = qualifier;
-            this.value = value;
-            this.usesDefault = false;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the EdmVocabularyAnnotation class
-        /// to the default value.
-        /// </summary>
-        /// <param name=“target”>Element the annotation applies to.</param>
-        /// <param name=“term”>Term bound by the annotation</param>
-        public EdmVocabularyAnnotation(IEdmVocabularyAnnotatable target, IEdmTerm term)
-        {
-            // Check arguments
-            if (term.DefaultValue == null) // throw error if no default value
+            if (term is EdmTerm edmTerm)
             {
-                //throw new ODataException("Type name should not be null or empty when serializing an Enum value for URI key.");
-                EdmUtil.CheckArgumentNull(new EdmStringConstant(null), "value");
+                return BuildDefaultValue(edmTerm.Type, edmTerm.DefaultValue);
             }
-            EdmUtil.CheckArgumentNull(target, "target");
-            EdmUtil.CheckArgumentNull(term, "term");
 
-            // Check arguments
-            EdmUtil.CheckArgumentNull(target, "target");
-            EdmUtil.CheckArgumentNull(term, "term");
+            //if (term is CsdlSemanticsTerm csdlTerm)
+            //{
 
-            // Initialize
-            this.target = target;
-            this.term = term;
-            this.qualifier = null;
-            //this.value = BuildDefaultValue(term); // Note: Eventually this method will parse the default value
-            this.value = new EdmStringConstant(term.DefaultValue); // Note: temporarily only supporting Strings
-            this.usesDefault = true;
+            //}
+            
         }
 
-        /// <summary>
-        /// Parses a <paramref name="defaultValue"/> into an IEdmExpression value of the correct type.
-        /// </summary>
-        /// <param name=“typeReference”>The type of value.</param>
-        /// <param name=“defaultValue”>Original default value.</param>
-        /// <returns>An IEdmExpression of type <paramref name="typeReference".</paramref></returns>
-        /*private static IEdmExpression BuildDefaultValue(IEdmTypeReference typeReference, string defaultValue)
+        private static IEdmExpression BuildDefaultValue(IEdmTypeReference typeReference, string defaultValue)
         {
             //string defaultValue = term.DefaultValue;
             EdmTypeKind termTypeKind = typeReference.TypeKind();
@@ -98,6 +36,7 @@ namespace Microsoft.OData.Edm.Vocabularies
             {
                 case EdmTypeKind.Primitive:
                     return BuildPrimitiveValue(typeReference.AsPrimitive(), defaultValue);
+
                 case EdmTypeKind.Enum:
                     // TODO: return new EdmEnumMemberExpression(....);
                 case EdmTypeKind.Complex:
@@ -145,10 +84,10 @@ namespace Microsoft.OData.Edm.Vocabularies
                 // FunctionApplication, LabeledExpressionReference, Labeled, PropertyPath, NavigationPropertyPath,
                 // DateConstant, TimeOfDayConstant, EnumMember, AnnotationPath
             }
-        }*/
+        }
 
         // Parse an object from a string
-        /*private static IDictionary<string, string> ParseObject(string defaultValue)
+        private static IDictionary<string, string> ParseObject(string defaultValue)
         {
             // parse the JSON array into items
             // "[5, 6, 8]"  => return "5", "6", "8"
@@ -163,10 +102,10 @@ namespace Microsoft.OData.Edm.Vocabularies
             // "[5, 6, 8]"  => return "5", "6", "8"
             // defaultValue.
             return null;
-        }*/
+        }
 
         // Return an IEdmExpression for a primitive value from a string
-        /*private static IEdmExpression BuildPrimitiveValue(IEdmPrimitiveTypeReference reference, string defaultValue)
+        private static IEdmExpression BuildPrimitiveValue(IEdmPrimitiveTypeReference reference, string defaultValue, bool isEdm)
         {
             switch (reference.PrimitiveKind())
             {
@@ -241,58 +180,9 @@ namespace Microsoft.OData.Edm.Vocabularies
                     // Throw exception here for not supported TypeKind
                     throw new InvalidOperationException(Edm.Strings.UnknownEnumVal_PrimitiveKind(reference.PrimitiveKind().ToString()));
             }
-        }*/
-
-        /* Note: This constructor is ambiguous with the other three-param constructor...
-        /// <summary>
-        /// NEW: Initializes a new instance of the EdmVocabularyAnnotation class 
-        /// to the default value.
-        /// </summary>
-        /// <param name=“target”>Element the annotation applies to.</param>
-        /// <param name=“term”>Term bound by the annotation</param>
-        /// <param name=“qualifier”>Qualifier used to distinguish bindings.</param>
-        public EdmVocabularyAnnotation(IEdmVocabularyAnnotatable target, IEdmTerm term,
-        string qualifier)
-        { }*/
-
-        /// <summary>
-        /// Gets the element the annotation applies to.
-        /// </summary>
-        public IEdmVocabularyAnnotatable Target
-        {
-            get { return this.target; }
         }
 
-        /// <summary>
-        /// Gets the term bound by the annotation.
-        /// </summary>
-        public IEdmTerm Term
-        {
-            get { return this.term; }
-        }
-
-        /// <summary>
-        /// Gets the qualifier used to discriminate between multiple bindings of the same property or type.
-        /// </summary>
-        public string Qualifier
-        {
-            get { return this.qualifier; }
-        }
-
-        /// <summary>
-        /// Gets the expression producing the value of the annotation.
-        /// </summary>
-        public IEdmExpression Value
-        {
-            get { return this.value; }
-        }
-
-        /// <summary>
-        /// Gets whether the annotation uses a default value
-        /// (not defined with a provided value).
-        /// </summary>
-        public bool UsesDefault {
-            get { return this.usesDefault; }
-        }
+        private static CsdlExpressionBase GetDefaultExpression()
     }
+#endif
 }

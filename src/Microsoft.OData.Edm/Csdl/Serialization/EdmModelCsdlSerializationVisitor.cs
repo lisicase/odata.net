@@ -344,16 +344,7 @@ namespace Microsoft.OData.Edm.Csdl.Serialization
 
         protected override void ProcessAnnotation(IEdmVocabularyAnnotation annotation)
         {
-            bool isInline;
-            // Note: This currently needs to be separated out because CsdlSemanticsVocabularyAnnotation
-            // doesn't return the default value from Value at the moment.
-            if (!annotation.UsesDefault)
-            {
-                isInline = IsInlineExpression(annotation.Value);
-            } else
-            {
-                isInline = IsInlineExpression(new EdmStringConstant(annotation.Term.DefaultValue));
-            }
+            bool isInline = IsInlineExpression(annotation.Value);
             this.BeginElement(annotation, t => this.schemaWriter.WriteVocabularyAnnotationElementHeader(t, isInline));
             if (!isInline)
             {
