@@ -63,6 +63,9 @@ namespace Microsoft.OData.Edm.Vocabularies
             // Check arguments
             if (term.DefaultValue == null) // throw error if no default value
             {
+                // Note: why is this string not okay but the one in LiteralFormatter.cs is?
+                // Should I create the following in Microsoft.OData.Core.cs?
+                // internal const string EdmVocabularyAnnotations_DidNotFindDefaultValue = "EdmVocabularyAnnotations_DidNotFindDefaultValue";
                 //throw new ODataException("Type name should not be null or empty when serializing an Enum value for URI key.");
                 EdmUtil.CheckArgumentNull(new EdmStringConstant(null), "value");
             }

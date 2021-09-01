@@ -63,7 +63,7 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
         /// </summary>
         public bool UsesDefault
         {
-            get { return this.Annotation.UsesDefault; }
+            get { return this.Annotation.Expression == null; }
         }
 
         public override CsdlSemanticsModel Model
@@ -137,7 +137,7 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
         {
             IEdmTypeReference termType = Term is UnresolvedVocabularyTerm ? null : Term.Type;
 
-            if (this.Annotation.UsesDefault && termType != null)
+            if (this.Annotation.Expression == null && termType != null)
             {
                 CsdlExpressionBase defaultExpBase = CreateDefaultExpression(termType, Term.DefaultValue);
                 

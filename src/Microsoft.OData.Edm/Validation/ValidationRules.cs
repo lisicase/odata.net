@@ -2485,16 +2485,13 @@ namespace Microsoft.OData.Edm.Validation
                 (context, annotation) =>
                 {
                     IEnumerable<EdmError> errors;
-                    if (!annotation.UsesDefault)
+                    if (!annotation.Value.TryCast(annotation.Term.Type, out errors))
                     {
-                        if (!annotation.Value.TryCast(annotation.Term.Type, out errors))
+                        foreach (EdmError error in errors)
                         {
-                            foreach (EdmError error in errors)
+                            if (error.ErrorCode != EdmErrorCode.RecordExpressionMissingRequiredProperty)
                             {
-                                if (error.ErrorCode != EdmErrorCode.RecordExpressionMissingRequiredProperty)
-                                {
-                                    context.AddError(error);
-                                }
+                                context.AddError(error);
                             }
                         }
                     }

@@ -364,15 +364,6 @@ namespace Microsoft.OData.Edm.Csdl.Parsing
             string qualifier = Optional(CsdlConstants.Attribute_Qualifier);
             CsdlExpressionBase expression = this.ParseAnnotationExpression(element, childValues);
 
-
-            // Note: Attempted to set the expression to the term's default value,
-            // but there wasn't a good way to access that value -- just the term's name.
-            /* (expression == null)
-            {
-                XmlAttributeInfo termComponent = element.Attributes[CsdlConstants.Attribute_Term];
-                //termComponent. // doesn't have DefaultValue
-            }*/
-
             return new CsdlAnnotation(term, qualifier, expression, element.Location);
         }
 
