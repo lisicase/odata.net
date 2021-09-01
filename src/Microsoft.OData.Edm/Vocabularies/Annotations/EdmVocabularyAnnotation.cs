@@ -13,7 +13,7 @@ namespace Microsoft.OData.Edm.Vocabularies
     /// <summary>
     /// Represents an EDM annotation with an immediate value.
     /// </summary>
-    public class EdmVocabularyAnnotation : EdmElement, IEdmVocabularyAnnotation
+    public class EdmVocabularyAnnotation : EdmElement, IEdmVocabularyAnnotationWithDefault
     {
         private readonly IEdmVocabularyAnnotatable target;
         private readonly IEdmTerm term;

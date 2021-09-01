@@ -504,7 +504,7 @@ namespace Microsoft.OData.Edm.Csdl.Serialization
             this.WriteOptionalAttribute(CsdlConstants.Attribute_Qualifier, annotation.Qualifier, EdmValueWriter.StringAsXml);
             if (isInline)
             {
-                if (!annotation.UsesDefault)
+                if (!((IEdmVocabularyAnnotationWithDefault)annotation).UsesDefault)
                 // Note: If I recall correctly, casting didn't work here (it caused problems in other tests),
                 // so I added UsesDefault to the interface. This is a breaking change, so it'll need to become
                 // an interface extension or similar in the future.

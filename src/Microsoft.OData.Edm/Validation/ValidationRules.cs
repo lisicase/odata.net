@@ -2504,7 +2504,7 @@ namespace Microsoft.OData.Edm.Validation
             new ValidationRule<IEdmVocabularyAnnotation>(
                 (context, annotation) =>
                 {
-                    if (annotation.UsesDefault && annotation.Term.DefaultValue == null)
+                    if (((IEdmVocabularyAnnotationWithDefault)annotation).UsesDefault && annotation.Term.DefaultValue == null)
                     {
                         context.AddError(
                             annotation.Location(),

@@ -433,11 +433,11 @@ namespace Microsoft.OData.Edm.Tests.Csdl
             var model = CsdlReader.Parse(XElement.Parse(csdl).CreateReader());
             IEdmTerm defaultTerm = model.FindTerm("NS.MyDefaultTerm");
             Assert.Equal("This is a test", defaultTerm.DefaultValue);
-            IEnumerable<IEdmVocabularyAnnotation> annotations = model.VocabularyAnnotations;
-            Assert.Equal(2, annotations.Count());
-            IEdmVocabularyAnnotation annotationWithSpecifiedValue = annotations.ElementAt(0);
-            IEdmVocabularyAnnotation annotationWithDefaultValue = annotations.ElementAt(1);
+            IEdmVocabularyAnnotation[] annotations = model.VocabularyAnnotations.ToArray();
+            Assert.Equal(2, annotations.Length);
+            IEdmVocabularyAnnotationWithDefault annotationWithSpecifiedValue = Assert.IsAssignableFrom<IEdmVocabularyAnnotationWithDefault>(annotations[0]);
             Assert.False(annotationWithSpecifiedValue.UsesDefault);
+            IEdmVocabularyAnnotationWithDefault annotationWithDefaultValue = Assert.IsAssignableFrom<IEdmVocabularyAnnotationWithDefault>(annotations[1]);
             Assert.True(annotationWithDefaultValue.UsesDefault);
 
             // Validate model

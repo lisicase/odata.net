@@ -17,7 +17,7 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
     /// <summary>
     /// Provides semantics for a CsdlAnnotation.
     /// </summary>
-    internal class CsdlSemanticsVocabularyAnnotation : CsdlSemanticsElement, IEdmVocabularyAnnotation, IEdmCheckable
+    internal class CsdlSemanticsVocabularyAnnotation : CsdlSemanticsElement, IEdmCheckable, IEdmVocabularyAnnotationWithDefault
     {
         protected readonly CsdlAnnotation Annotation;
         private readonly CsdlSemanticsModel model;
