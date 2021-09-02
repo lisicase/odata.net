@@ -2500,11 +2500,11 @@ namespace Microsoft.OData.Edm.Validation
         /// <summary>
         /// Validates that if a vocabulary annotation doesn't have a value, it should declare a type with a default value.
         /// </summary>
-        public static readonly ValidationRule<IEdmVocabularyAnnotation> VocabularyAnnotationUseDefaultTermMustHaveDefaultValue =
-            new ValidationRule<IEdmVocabularyAnnotation>(
+        public static readonly ValidationRule<IEdmVocabularyAnnotationWithDefault> VocabularyAnnotationUseDefaultTermMustHaveDefaultValue =
+            new ValidationRule<IEdmVocabularyAnnotationWithDefault>(
                 (context, annotation) =>
                 {
-                    if (((IEdmVocabularyAnnotationWithDefault)annotation).UsesDefault && annotation.Term.DefaultValue == null)
+                    if (annotation.UsesDefault && annotation.Term.DefaultValue == null)
                     {
                         context.AddError(
                             annotation.Location(),

@@ -9,7 +9,7 @@ namespace Microsoft.OData.Edm.Vocabularies
     /// <summary>
     /// Represents an EDM vocabulary annotation that may use a term's default value as its value.
     /// </summary>
-    interface IEdmVocabularyAnnotationWithDefault : IEdmVocabularyAnnotation
+    public interface IEdmVocabularyAnnotationWithDefault : IEdmVocabularyAnnotation
     {
         /// <summary>
         /// Gets whether the annotation uses a default value
