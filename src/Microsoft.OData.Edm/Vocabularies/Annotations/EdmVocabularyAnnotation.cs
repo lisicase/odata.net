@@ -63,8 +63,8 @@ namespace Microsoft.OData.Edm.Vocabularies
             // Check arguments
             if (term.DefaultValue == null) // throw error if no default value
             {
-                // Note: why is this string not okay but the one in LiteralFormatter.cs is?
-                // Should I create the following in Microsoft.OData.Core.cs?
+                // Note: Should I create the following in Microsoft.OData.Core.cs?
+                // Answer: Better to centralize error messages for language translations
                 // internal const string EdmVocabularyAnnotations_DidNotFindDefaultValue = "EdmVocabularyAnnotations_DidNotFindDefaultValue";
                 //throw new ODataException("Type name should not be null or empty when serializing an Enum value for URI key.");
                 EdmUtil.CheckArgumentNull(new EdmStringConstant(null), "value");
@@ -80,8 +80,7 @@ namespace Microsoft.OData.Edm.Vocabularies
             this.target = target;
             this.term = term;
             this.qualifier = null;
-            //this.value = BuildDefaultValue(term); // Note: Eventually this method will parse the default value
-            this.value = new EdmStringConstant(term.DefaultValue); // Note: temporarily only supporting Strings
+            this.value = BuildDefaultValue(term.Type, term.DefaultValue);
             this.usesDefault = true;
         }
 
@@ -91,17 +90,17 @@ namespace Microsoft.OData.Edm.Vocabularies
         /// <param name=“typeReference”>The type of value.</param>
         /// <param name=“defaultValue”>Original default value.</param>
         /// <returns>An IEdmExpression of type <paramref name="typeReference".</paramref></returns>
-        /*private static IEdmExpression BuildDefaultValue(IEdmTypeReference typeReference, string defaultValue)
+        private static IEdmExpression BuildDefaultValue(IEdmTypeReference typeReference, string defaultValue)
         {
-            //string defaultValue = term.DefaultValue;
             EdmTypeKind termTypeKind = typeReference.TypeKind();
 
             // Create constants for the corresponding types
+            // TODO: Create test cases for all of these
             switch(termTypeKind)
             {
                 case EdmTypeKind.Primitive:
                     return BuildPrimitiveValue(typeReference.AsPrimitive(), defaultValue);
-                case EdmTypeKind.Enum:
+                /*case EdmTypeKind.Enum:
                     // TODO: return new EdmEnumMemberExpression(....);
                 case EdmTypeKind.Complex:
                     // TODO
@@ -138,7 +137,9 @@ namespace Microsoft.OData.Edm.Vocabularies
                         itemExpressions.Add(itemExpr);
                     }
 
-                    return new EdmCollectionExpression(elementType, itemExpressions);
+                    return new EdmCollectionExpression(elementType, itemExpressions);*/
+                default:
+                    return new EdmStringConstant(defaultValue); // change to null later?
 
                 //case EdmTypeKind.TypeDefinition:
                 //    ....
@@ -148,7 +149,7 @@ namespace Microsoft.OData.Edm.Vocabularies
                 // FunctionApplication, LabeledExpressionReference, Labeled, PropertyPath, NavigationPropertyPath,
                 // DateConstant, TimeOfDayConstant, EnumMember, AnnotationPath
             }
-        }*/
+        }
 
         // Parse an object from a string
         /*private static IDictionary<string, string> ParseObject(string defaultValue)
@@ -169,58 +170,114 @@ namespace Microsoft.OData.Edm.Vocabularies
         }*/
 
         // Return an IEdmExpression for a primitive value from a string
-        /*private static IEdmExpression BuildPrimitiveValue(IEdmPrimitiveTypeReference reference, string defaultValue)
+        private static IEdmExpression BuildPrimitiveValue(IEdmPrimitiveTypeReference reference, string defaultValue)
         {
             switch (reference.PrimitiveKind())
             {
                 case EdmPrimitiveTypeKind.Binary:
-                    byte[] binary = new byte[0];
+                    byte[] binary;
                     EdmValueParser.TryParseBinary(defaultValue, out binary);
                     return new EdmBinaryConstant(binary);
-         
-                // ...
                 case EdmPrimitiveTypeKind.Decimal:
-                    this.ProcessDecimalTypeReference(reference.AsDecimal());
-                    break;
+                    decimal? dec;
+                    if (EdmValueParser.TryParseDecimal(defaultValue, out dec))
+                    {
+                        decimal decResult = dec.Value;
+                        return new EdmDecimalConstant(decResult);
+                    } else
+                    {
+                        break;
+                    }
                 case EdmPrimitiveTypeKind.String:
-                    this.ProcessStringTypeReference(reference.AsString());
-                    break;
+                    return new EdmStringConstant(defaultValue);
                 case EdmPrimitiveTypeKind.DateTimeOffset:
+                    System.DateTimeOffset? dto;
+                    if (EdmValueParser.TryParseDateTimeOffset(defaultValue, out dto))
+                    {
+                        System.DateTimeOffset dtoResult = dto.Value;
+                        return new EdmDateTimeOffsetConstant(dtoResult);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 case EdmPrimitiveTypeKind.Duration:
-                case EdmPrimitiveTypeKind.TimeOfDay:
-                    this.ProcessTemporalTypeReference(reference.AsTemporal());
-                    break;
+                    System.TimeSpan? ts;
+                    if (EdmValueParser.TryParseDuration(defaultValue, out ts))
+                    {
+                        System.TimeSpan tsResult = ts.Value;
+                        return new EdmDurationConstant(tsResult);
+                    } else
+                    {
+                        break;
+                    }
+                case EdmPrimitiveTypeKind.TimeOfDay: // Note: Should I break/continue when null or assign to default value?
+                    TimeOfDay? tod;
+                    if (EdmValueParser.TryParseTimeOfDay(defaultValue, out tod))
+                    {
+                        TimeOfDay todResult = tod.Value;
+                        return new EdmTimeOfDayConstant(todResult);
+                    } else
+                    {
+                        break;
+                    }
                 case EdmPrimitiveTypeKind.Boolean:
-                    // TODO: return constant
-                    break;
+                    bool? bl;
+                    if (EdmValueParser.TryParseBool(defaultValue, out bl))
+                    {
+                        bool blResult = bl.Value;
+                        return new EdmBooleanConstant(blResult);
+                    } else
+                    {
+                        break;
+                    }
                 case EdmPrimitiveTypeKind.Byte:
-                    // TODO: return constant
-                case EdmPrimitiveTypeKind.Double:
-                    // TODO: return constant
-                    break;
-                case EdmPrimitiveTypeKind.Guid:
-                    // TODO: return constant
-                    break;
-                case EdmPrimitiveTypeKind.Int16:
-                    // TODO: return constant
-                    break;
-                case EdmPrimitiveTypeKind.Int32:
-                    // TODO: return constant
-                    break;
-                case EdmPrimitiveTypeKind.Int64:
-                    // TODO: return constant
-                    break;
-                case EdmPrimitiveTypeKind.SByte:
-                    // TODO: return constant
-                    break;
+                    break; // unsupported
                 case EdmPrimitiveTypeKind.Single:
-                    // TODO: return constant
-                    break;
+                case EdmPrimitiveTypeKind.Double:
+                    double? dbl;
+                    if (EdmValueParser.TryParseFloat(defaultValue, out dbl))
+                    {
+                        double dblResult = dbl.Value;
+                        return new EdmFloatingConstant(dblResult);
+                    } else
+                    {
+                        break;
+                    }
+                case EdmPrimitiveTypeKind.Guid:
+                    System.Guid? gd;
+                    if (EdmValueParser.TryParseGuid(defaultValue, out gd))
+                    {
+                        System.Guid gdResult = gd.Value;
+                        return new EdmGuidConstant(gdResult);
+                    } else
+                    {
+                        break;
+                    }
+                case EdmPrimitiveTypeKind.Int16:
+                case EdmPrimitiveTypeKind.Int32:
+                case EdmPrimitiveTypeKind.Int64:
+                    int? intNum;
+                    if (EdmValueParser.TryParseInt(defaultValue, out intNum))
+                    {
+                        int intNumResult = intNum.Value;
+                        return new EdmIntegerConstant(intNumResult);
+                    } else
+                    {
+                        break;
+                    }
+                case EdmPrimitiveTypeKind.SByte:
+                    break; // unsupported
                 case EdmPrimitiveTypeKind.Date:
-                    // TODO: return constant
-                    break;
-
-                    // Note: Ignoring these for now - should they be supported for expressions?
+                    Date? dt;
+                    if (EdmValueParser.TryParseDate(defaultValue, out dt))
+                    {
+                        Date dtResult = dt.Value;
+                        return new EdmDateConstant(dtResult);
+                    } else
+                    {
+                        break;
+                    }
                 case EdmPrimitiveTypeKind.Stream:
                 case EdmPrimitiveTypeKind.Geography:
                 case EdmPrimitiveTypeKind.GeographyPoint:
@@ -241,12 +298,13 @@ namespace Microsoft.OData.Edm.Vocabularies
                 case EdmPrimitiveTypeKind.PrimitiveType:
                 case EdmPrimitiveTypeKind.None:
                 default:
-                    // Throw exception here for not supported TypeKind
-                    throw new InvalidOperationException(Edm.Strings.UnknownEnumVal_PrimitiveKind(reference.PrimitiveKind().ToString()));
+                    break;
+                    //throw new InvalidOperationException(Edm.Strings.UnknownEnumVal_PrimitiveKind(reference.PrimitiveKind().ToString()));
             }
-        }*/
+            throw new System.Exception(); // TODO: update exception
+        }
 
-        /* Note: This constructor is ambiguous with the other three-param constructor...
+        /* Note: This constructor is ambiguous with the other three-param constructor.
         /// <summary>
         /// NEW: Initializes a new instance of the EdmVocabularyAnnotation class 
         /// to the default value.
