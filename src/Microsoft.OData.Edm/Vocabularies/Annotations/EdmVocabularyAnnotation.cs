@@ -79,8 +79,6 @@ namespace Microsoft.OData.Edm.Vocabularies
             this.usesDefault = true;
         }
 
-        // TODO: Create EdmTermExtensionsTest
-
         /* Note: This constructor is ambiguous with the other three-param constructor.
         /// <summary>
         /// NEW: Initializes a new instance of the EdmVocabularyAnnotation class 

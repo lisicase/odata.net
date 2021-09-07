@@ -1867,20 +1867,6 @@ namespace Microsoft.OData.Edm.Tests.Csdl
         }
 
         [Fact]
-        public void LisiIsTestingSomething() // TODO: change name
-        {
-            string defaultValue = "[{\"city\":[\"redmond\",\"s{eattle\"]},{\"state\":[\"wa\",\"ca\"]},\"test\"]";
-            IEnumerable<string> results = EdmTermExtensions.ParseCollection(defaultValue);
-            var resultsArray = results.ToArray();
-            Assert.Equal(3, resultsArray.Length);
-            Assert.Equal("{\"city\":[\"redmond\",\"s{eattle\"]}", resultsArray[0]);
-            Assert.Equal("{\"state\":[\"wa\",\"ca\"]}", resultsArray[1]);
-            Assert.Equal("\"test\"", resultsArray[2]);
-
-            // TODO: add additional cases - empty array, empty string, null, whitespace, special chars, etc.
-        }
-
-        [Fact]
         public void CanWritePropertyWithCoreTypeDefinitionAndValidationPassed()
         {
             // Arrange
