@@ -62,13 +62,9 @@ namespace Microsoft.OData.Edm.Vocabularies
             // Check arguments
             EdmUtil.CheckArgumentNull(target, "target");
             EdmUtil.CheckArgumentNull(term, "term");
-            if (term.DefaultValue == null) // throw error if no default value
+            if (term.DefaultValue == null)
             {
-                // Note: Should I create the following in Microsoft.OData.Core.cs?
-                // Answer: Better to centralize error messages for language translations
-                // internal const string EdmVocabularyAnnotations_DidNotFindDefaultValue = "EdmVocabularyAnnotations_DidNotFindDefaultValue";
-                //throw new ODataException("Type name should not be null or empty when serializing an Enum value for URI key.");
-                EdmUtil.CheckArgumentNull(new EdmStringConstant(null), "value");
+                throw new ODataException(Strings.EdmVocabularyAnnotations_DidNotFindDefaultValue(term.Name));
             }
 
             // Initialize

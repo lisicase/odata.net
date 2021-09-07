@@ -14,6 +14,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 #endif
 using System.Xml;
+using Microsoft.Data.OData;
 using Microsoft.OData.Edm.Csdl;
 using Microsoft.OData.Edm.Validation;
 using Microsoft.OData.Edm.Vocabularies;
@@ -2222,7 +2223,6 @@ namespace Microsoft.OData.Edm.Tests.Csdl
             EdmComplexType complex = new EdmComplexType("NS", "Complex");
             model.AddElement(complex);
             EdmTerm term1 = new EdmTerm("NS", "MyAnnotationPathTerm", EdmCoreModel.Instance.GetAnnotationPath(false));
-            //EdmTerm term2 = new EdmTerm("NS", "MyNavigationPathTerm", EdmCoreModel.Instance.GetNavigationPropertyPath(false), "Property Term", "true");
             EdmTerm term2 = new EdmTerm("NS", "MyDefaultStringTerm", EdmCoreModel.Instance.GetString(false), "Property Term", "This is a test");
             EdmTerm term3 = new EdmTerm("NS", "MyDefaultBoolTerm", EdmCoreModel.Instance.GetBoolean(false), "Property Term", "true");
 
@@ -2247,7 +2247,8 @@ namespace Microsoft.OData.Edm.Tests.Csdl
             model.SetVocabularyAnnotation(annotation);
 
             // Fails when trying to not specify a value to a term without a default value
-            Assert.Throws<ArgumentNullException>(() => annotation = new EdmVocabularyAnnotation(complex, term1));
+            //new EdmVocabularyAnnotation(complex, term1);
+            Assert.Throws<ODataException>(() => annotation = new EdmVocabularyAnnotation(complex, term1));
 
             IEnumerable<EdmError> errors;
             Assert.True(model.Validate(out errors));

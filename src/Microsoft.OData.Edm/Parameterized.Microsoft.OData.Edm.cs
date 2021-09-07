@@ -2594,6 +2594,15 @@ namespace Microsoft.OData.Edm {
             return Microsoft.OData.Edm.EdmRes.GetString(Microsoft.OData.Edm.EdmRes.TimeOfDay_InvalidCompareToTarget, p0);
         }
 
+        /// <summary>
+        /// A string like "Annotation expressions must specify a value or use a term with a specified default value. 
+        /// Cannot find a default value for the given annotation term, '{0}'."
+        /// </summary>
+        internal static string EdmVocabularyAnnotations_DidNotFindDefaultValue(object p0)
+        {
+            return Microsoft.OData.Edm.EdmRes.GetString(Microsoft.OData.Edm.EdmRes.EdmVocabularyAnnotations_DidNotFindDefaultValue, p0);
+        }
+
     }
 
     /// <summary>

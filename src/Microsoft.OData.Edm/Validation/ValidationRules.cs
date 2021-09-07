@@ -2509,7 +2509,7 @@ namespace Microsoft.OData.Edm.Validation
                         context.AddError(
                             annotation.Location(),
                             EdmErrorCode.ExpressionMissingValueOrTermWithDefaultValue,
-                            "Annotation expressions must specify a value or use a term with a specified default value.");
+                            Strings.EdmVocabularyAnnotations_DidNotFindDefaultValue(annotation.Term.Name));
                     }
                 });
 

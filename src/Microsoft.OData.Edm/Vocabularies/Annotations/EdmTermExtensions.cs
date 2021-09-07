@@ -41,10 +41,11 @@ namespace Microsoft.OData.Edm.Vocabularies
                     // return ParsePath(typeReference.AsPath(), defaultValue);
                 case EdmTypeKind.TypeDefinition:
                     // return ParseTypeDefinition(typeReference.AsTypeDefinition(), defaultValue);
+                    throw Error.NotImplemented();
                 case EdmTypeKind.EntityReference:
                 case EdmTypeKind.Untyped:
                 default:
-                    throw new System.Exception(); // TODO: change to unsupported type exception
+                    throw Error.NotSupported();
             }
         }
 
@@ -338,9 +339,8 @@ namespace Microsoft.OData.Edm.Vocabularies
                 case EdmPrimitiveTypeKind.None:
                 default:
                     break;
-                    //throw new InvalidOperationException(Edm.Strings.UnknownEnumVal_PrimitiveKind(reference.PrimitiveKind().ToString()));
             }
-            throw new System.Exception(); // TODO: update exception
+            throw Error.NotSupported();
         }
 
         #if false // backup
