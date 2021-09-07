@@ -1867,6 +1867,20 @@ namespace Microsoft.OData.Edm.Tests.Csdl
         }
 
         [Fact]
+        public void LisiIsTestingSomething() // TODO: change name
+        {
+            string defaultValue = "[{\"city\":[\"redmond\",\"s{eattle\"]},{\"state\":[\"wa\",\"ca\"]},\"test\"]";
+            IEnumerable<string> results = EdmTermExtensions.ParseCollection(defaultValue);
+            var resultsArray = results.ToArray();
+            Assert.Equal(3, resultsArray.Length);
+            Assert.Equal("{\"city\":[\"redmond\",\"s{eattle\"]}", resultsArray[0]);
+            Assert.Equal("{\"state\":[\"wa\",\"ca\"]}", resultsArray[1]);
+            Assert.Equal("\"test\"", resultsArray[2]);
+
+            // TODO: add additional cases - empty array, empty string, null, whitespace, special chars, etc.
+        }
+
+        [Fact]
         public void CanWritePropertyWithCoreTypeDefinitionAndValidationPassed()
         {
             // Arrange
@@ -2223,19 +2237,26 @@ namespace Microsoft.OData.Edm.Tests.Csdl
             model.AddElement(complex);
             EdmTerm term1 = new EdmTerm("NS", "MyAnnotationPathTerm", EdmCoreModel.Instance.GetAnnotationPath(false));
             //EdmTerm term2 = new EdmTerm("NS", "MyNavigationPathTerm", EdmCoreModel.Instance.GetNavigationPropertyPath(false), "Property Term", "true");
-            EdmTerm term2 = new EdmTerm("NS", "MyDefaultTerm", EdmCoreModel.Instance.GetString(false), "Property Term", "This is a test");
+            EdmTerm term2 = new EdmTerm("NS", "MyDefaultStringTerm", EdmCoreModel.Instance.GetString(false), "Property Term", "This is a test");
+            EdmTerm term3 = new EdmTerm("NS", "MyDefaultBoolTerm", EdmCoreModel.Instance.GetBoolean(false), "Property Term", "true");
 
             model.AddElement(term1);
             model.AddElement(term2);
+            model.AddElement(term3);
 
             EdmVocabularyAnnotation annotation = new EdmVocabularyAnnotation(complex, term1, new EdmAnnotationPathExpression("abc/efg"));
             annotation.SetSerializationLocation(model, EdmVocabularyAnnotationSerializationLocation.Inline);
             model.SetVocabularyAnnotation(annotation);
 
-            // Succeeds at using term's default value when value not specified
+            // Succeeds at using term's default value when value not specified (for string/bool)
             annotation = new EdmVocabularyAnnotation(complex, term2);
             Assert.True(annotation.UsesDefault);
             Assert.Equal(annotation.Term.DefaultValue, ((EdmStringConstant)annotation.Value).Value);
+            annotation.SetSerializationLocation(model, EdmVocabularyAnnotationSerializationLocation.Inline);
+            model.SetVocabularyAnnotation(annotation);
+
+            annotation = new EdmVocabularyAnnotation(complex, term3);
+            Assert.True(annotation.UsesDefault);
             annotation.SetSerializationLocation(model, EdmVocabularyAnnotationSerializationLocation.Inline);
             model.SetVocabularyAnnotation(annotation);
 
@@ -2252,10 +2273,12 @@ namespace Microsoft.OData.Edm.Tests.Csdl
                  "<Schema Namespace=\"NS\" xmlns=\"http://docs.oasis-open.org/odata/ns/edm\">" +
                    "<ComplexType Name=\"Complex\">" +
                      "<Annotation Term=\"NS.MyAnnotationPathTerm\" AnnotationPath=\"abc/efg\" />" +
-                     "<Annotation Term=\"NS.MyDefaultTerm\" />" + // no longer has value
+                     "<Annotation Term=\"NS.MyDefaultStringTerm\" />" + // no longer has value
+                     "<Annotation Term=\"NS.MyDefaultBoolTerm\" />" + // no longer has value
                    "</ComplexType>" +
                    "<Term Name=\"MyAnnotationPathTerm\" Type=\"Edm.AnnotationPath\" Nullable=\"false\" />" +
-                   "<Term Name=\"MyDefaultTerm\" Type=\"Edm.String\" DefaultValue=\"This is a test\" AppliesTo=\"Property Term\" Nullable=\"false\" />" +
+                   "<Term Name=\"MyDefaultStringTerm\" Type=\"Edm.String\" DefaultValue=\"This is a test\" AppliesTo=\"Property Term\" Nullable=\"false\" />" +
+                   "<Term Name=\"MyDefaultBoolTerm\" Type=\"Edm.Boolean\" DefaultValue=\"true\" AppliesTo=\"Property Term\" Nullable=\"false\" />" +
                  "</Schema>" +
                "</edmx:DataServices>" +
              "</edmx:Edmx>");
