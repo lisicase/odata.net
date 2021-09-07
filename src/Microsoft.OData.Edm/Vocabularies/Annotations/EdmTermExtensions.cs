@@ -9,19 +9,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text;
+using Microsoft.OData.Edm.Csdl.CsdlSemantics;
+using Microsoft.OData.Edm.Csdl.Parsing.Ast;
 
 namespace Microsoft.OData.Edm.Vocabularies
 {
     internal static class EdmTermExtensions
     {
-
         /// <summary>
-        /// Parses a <paramref name="defaultValue"/> into an IEdmExpression value of the correct type.
+        /// Parses a <paramref name="defaultValue"/> into an IEdmExpression value of the correct EDM type.
         /// </summary>
         /// <param name=“typeReference”>The type of value.</param>
         /// <param name=“defaultValue”>Original default value.</param>
         /// <returns>An IEdmExpression of type <paramref name="typeReference".</paramref></returns>
-        public static IEdmExpression BuildDefaultExpression(IEdmTypeReference typeReference, string defaultValue)
+        public static IEdmExpression BuildDefaultEdmExpression(IEdmTypeReference typeReference, string defaultValue)
         {
             EdmTypeKind termTypeKind = typeReference.TypeKind();
 
@@ -29,18 +30,18 @@ namespace Microsoft.OData.Edm.Vocabularies
             switch (termTypeKind) // TODO: Create test cases for all of these
             {
                 case EdmTypeKind.Primitive:
-                    return BuildPrimitiveValue(typeReference.AsPrimitive(), defaultValue);
+                    return BuildEdmPrimitiveValueExp(typeReference.AsPrimitive(), defaultValue);
                 case EdmTypeKind.Enum:
-                    // return ParseEnum(typeReference.AsEnum(), defaultValue)
+                    // return BuildEdmEnumExp(typeReference.AsEnum(), defaultValue)
                 case EdmTypeKind.Complex:
                 case EdmTypeKind.Entity:
-                    // return ParseStructuredType(typeReference.AsStructured(), defaultValue);
+                    // return BuildEdmStructuredTypeExp(typeReference.AsStructured(), defaultValue);
                 case EdmTypeKind.Collection:
-                    // return ParseCollection(typeReference, defaultValue);
+                    // return BuildEdmCollectionExp(typeReference, defaultValue);
                 case EdmTypeKind.Path:
-                    // return ParsePath(typeReference.AsPath(), defaultValue);
+                    // return BuildEdmPathExp(typeReference.AsPath(), defaultValue);
                 case EdmTypeKind.TypeDefinition:
-                    // return ParseTypeDefinition(typeReference.AsTypeDefinition(), defaultValue);
+                    // return BuildEdmTypeDefinitionExp(typeReference.AsTypeDefinition(), defaultValue);
                     throw Error.NotImplemented();
                 case EdmTypeKind.EntityReference:
                 case EdmTypeKind.Untyped:
@@ -49,11 +50,11 @@ namespace Microsoft.OData.Edm.Vocabularies
             }
         }
 
-        /// <summary>Returns an IEdmExpression for an enum member.</summary>
+        /// <summary>Returns an IEdmExpression for an EDM enum member.</summary>
         /// <param name="defaultValue">String representation of the term's default value.</param>
         /// <param name="typeReference">Reference to the type of term.</param>
         /// <returns>Enum member expression for the default value.</returns>
-        private static EdmEnumMemberExpression ParseEnum(IEdmEnumTypeReference typeReference, string defaultValue)
+        private static EdmEnumMemberExpression BuildEdmEnumExp(IEdmEnumTypeReference typeReference, string defaultValue)
         {
             IEdmEnumType enumType = typeReference.EnumDefinition();
             CsdlLocation location = new CsdlLocation(0, 0);
@@ -61,7 +62,7 @@ namespace Microsoft.OData.Edm.Vocabularies
             return new EdmEnumMemberExpression(results.ToArray());
         }
 
-        /// <summary>Returns an IEdmExpression for a structured type.</summary>
+        /// <summary>Returns an IEdmExpression for an EDM structured type.</summary>
         /// <param name="defaultValue">String representation of the term's default value.</param>
         /// <param name="typeReference">Reference to the type of term.</param>
         /// <returns>Structured expression for the default value.</returns>
@@ -70,7 +71,7 @@ namespace Microsoft.OData.Edm.Vocabularies
         //   "City":"Redmond",
         //   "Street": "156TH, AVE..."
         // }
-        private static IEdmRecordExpression ParseStructuredType(IEdmStructuredTypeReference typeReference, string defaultValue)
+        private static IEdmRecordExpression BuildEdmStructuredTypeExp(IEdmStructuredTypeReference typeReference, string defaultValue)
         {
             IDictionary<string, string> entityItems = ParseObject(defaultValue);
             List<IEdmPropertyConstructor> properties = new List<IEdmPropertyConstructor>();
@@ -90,11 +91,11 @@ namespace Microsoft.OData.Edm.Vocabularies
             return new EdmRecordExpression(properties);
         }
 
-        /// <summary>Returns an IEdmExpression for a collection type.</summary>
+        /// <summary>Returns an IEdmExpression for an EDM collection type.</summary>
         /// <param name="defaultValue">String representation of the term's default value.</param>
         /// <param name="typeReference">Reference to the type of term.</param>
         /// <returns>Collection expression for the default value.</returns>
-        private static IEdmCollectionExpression ParseCollection(IEdmTypeReference typeReference, string defaultValue)
+        private static IEdmCollectionExpression BuildEdmCollectionExp(IEdmTypeReference typeReference, string defaultValue)
         {
             IEdmCollectionTypeReference collectionType = (IEdmCollectionTypeReference)typeReference;
             IEdmTypeReference elementType = collectionType.ElementType();
@@ -102,7 +103,7 @@ namespace Microsoft.OData.Edm.Vocabularies
             IList<IEdmExpression> itemExpressions = new List<IEdmExpression>();
             foreach (var item in items)
             {
-                IEdmExpression itemExpr = BuildDefaultExpression(elementType, item);
+                IEdmExpression itemExpr = BuildDefaultEdmExpression(elementType, item);
                 itemExpressions.Add(itemExpr);
             }
 
@@ -153,11 +154,11 @@ namespace Microsoft.OData.Edm.Vocabularies
             return parsedCollection;
         }
 
-        /// <summary>Returns an IEdmExpression for a path type.</summary>
+        /// <summary>Returns an IEdmExpression for an EDM path type.</summary>
         /// <param name="defaultValue">String representation of the term's default value.</param>
         /// <param name="typeReference">Reference to the type of term.</param>
         /// <returns>Expression for the default value.</returns>
-        private static IEdmExpression ParsePath(IEdmPathTypeReference typeReference, string defaultValue)
+        private static IEdmExpression BuildEdmPathExp(IEdmPathTypeReference typeReference, string defaultValue)
         {
             IEdmPathType pathType = (IEdmPathType)typeReference.Definition;
             switch (pathType.PathKind)
@@ -173,14 +174,14 @@ namespace Microsoft.OData.Edm.Vocabularies
             }
         }
 
-        /// <summary>Returns an IEdmExpression for a type definition type.</summary>
+        /// <summary>Returns an IEdmExpression for an EDM type definition type.</summary>
         /// <param name="defaultValue">String representation of the term's default value.</param>
         /// <param name="typeReference">Reference to the type of term.</param>
         /// <returns>Expression for the default value.</returns>
-        private static IEdmExpression ParseTypeDefinition(IEdmTypeDefinitionReference typeReference, string defaultValue)
+        private static IEdmExpression BuildEdmTypeDefinitionExp(IEdmTypeDefinitionReference typeReference, string defaultValue)
         {
             IEdmPrimitiveTypeReference underType = new EdmPrimitiveTypeReference(typeReference.UnderlyingType(), true);
-            return BuildDefaultExpression(underType, defaultValue);
+            return BuildDefaultEdmExpression(underType, defaultValue);
         }
 
         /// <summary>Returns a dictionary for an object.</summary>
@@ -214,11 +215,11 @@ namespace Microsoft.OData.Edm.Vocabularies
             return parsedResult;
         }
 
-        /// <summary>Returns an IEdmExpression for a primitive value.</summary>
+        /// <summary>Returns an IEdmExpression for an EDM primitive value.</summary>
         /// <param name="typeReference">Reference to the type of term.</param>
         /// <param name="defaultValue">String representation of the term's default value.</param>
         /// <returns>Primitive expression for the default value of the according type.</returns>
-        private static IEdmExpression BuildPrimitiveValue(IEdmPrimitiveTypeReference typeReference, string defaultValue)
+        private static IEdmExpression BuildEdmPrimitiveValueExp(IEdmPrimitiveTypeReference typeReference, string defaultValue)
         {
             switch (typeReference.PrimitiveKind())
             {
@@ -343,22 +344,104 @@ namespace Microsoft.OData.Edm.Vocabularies
             throw Error.NotSupported();
         }
 
-        #if false // backup
-        public static IEdmExpression GetDefaultExpression(this IEdmModel model, IEdmTerm term)
+        /// <summary>
+        /// Parses a <paramref name="defaultValue"/> into an IEdmExpression value of the correct CSDL type.
+        /// </summary>
+        /// <param name=“typeReference”>The type of value.</param>
+        /// <param name=“defaultValue”>Original default value.</param>
+        /// <returns>An IEdmExpression of type <paramref name="typeReference".</paramref></returns>
+        public static CsdlExpressionBase BuildDefaultCsdlExpression(IEdmTypeReference typeReference, string defaultValue, CsdlLocation location)
+        {
+            EdmTypeKind typeKind = typeReference.TypeKind();
+            switch (typeKind)
+            {
+                case EdmTypeKind.Primitive:
+                    return BuildCsdlPrimitiveValueExp((IEdmPrimitiveTypeReference)typeReference, defaultValue, location);
+                case EdmTypeKind.Collection:
+                case EdmTypeKind.Entity:
+                case EdmTypeKind.Complex:
+                case EdmTypeKind.Enum:
+                case EdmTypeKind.TypeDefinition:
+                    throw Error.NotImplemented();
+                default:
+                    throw Error.NotSupported();
+            }
+        }
+
+        /// <summary>Returns an IEdmExpression for a CSDL primitive value.</summary>
+        /// <param name="typeReference">Reference to the type of term.</param>
+        /// <param name="defaultValue">String representation of the term's default value.</param>
+        /// <param name="location">Location for the new expression.</param>
+        /// <returns>Primitive expression for the default value of the according type.</returns>
+        private static CsdlExpressionBase BuildCsdlPrimitiveValueExp(IEdmPrimitiveTypeReference typeReference, string defaultValue, CsdlLocation location)
+        {
+            switch (typeReference.PrimitiveKind())
+            {
+                case EdmPrimitiveTypeKind.Binary:
+                    return new CsdlConstantExpression(EdmValueKind.Binary, defaultValue, location);
+                case EdmPrimitiveTypeKind.Decimal:
+                    return new CsdlConstantExpression(EdmValueKind.Decimal, defaultValue, location);
+                case EdmPrimitiveTypeKind.String:
+                    return new CsdlConstantExpression(EdmValueKind.String, defaultValue, location);
+                case EdmPrimitiveTypeKind.DateTimeOffset:
+                    return new CsdlConstantExpression(EdmValueKind.DateTimeOffset, defaultValue, location);
+                case EdmPrimitiveTypeKind.Duration:
+                    return new CsdlConstantExpression(EdmValueKind.Duration, defaultValue, location);
+                case EdmPrimitiveTypeKind.TimeOfDay:
+                    return new CsdlConstantExpression(EdmValueKind.TimeOfDay, defaultValue, location);
+                case EdmPrimitiveTypeKind.Boolean:
+                    return new CsdlConstantExpression(EdmValueKind.Boolean, defaultValue, location);
+                case EdmPrimitiveTypeKind.Single:
+                case EdmPrimitiveTypeKind.Double:
+                    return new CsdlConstantExpression(EdmValueKind.Floating, defaultValue, location);
+                case EdmPrimitiveTypeKind.Guid:
+                    return new CsdlConstantExpression(EdmValueKind.Guid, defaultValue, location);
+                case EdmPrimitiveTypeKind.Int16:
+                case EdmPrimitiveTypeKind.Int32:
+                case EdmPrimitiveTypeKind.Int64:
+                    return new CsdlConstantExpression(EdmValueKind.Integer, defaultValue, location);
+                case EdmPrimitiveTypeKind.Date:
+                    return new CsdlConstantExpression(EdmValueKind.Date, defaultValue, location);
+                case EdmPrimitiveTypeKind.Byte:
+                case EdmPrimitiveTypeKind.SByte:
+                case EdmPrimitiveTypeKind.Stream:
+                case EdmPrimitiveTypeKind.Geography:
+                case EdmPrimitiveTypeKind.GeographyPoint:
+                case EdmPrimitiveTypeKind.GeographyLineString:
+                case EdmPrimitiveTypeKind.GeographyPolygon:
+                case EdmPrimitiveTypeKind.GeographyCollection:
+                case EdmPrimitiveTypeKind.GeographyMultiPolygon:
+                case EdmPrimitiveTypeKind.GeographyMultiLineString:
+                case EdmPrimitiveTypeKind.GeographyMultiPoint:
+                case EdmPrimitiveTypeKind.Geometry:
+                case EdmPrimitiveTypeKind.GeometryPoint:
+                case EdmPrimitiveTypeKind.GeometryLineString:
+                case EdmPrimitiveTypeKind.GeometryPolygon:
+                case EdmPrimitiveTypeKind.GeometryCollection:
+                case EdmPrimitiveTypeKind.GeometryMultiPolygon:
+                case EdmPrimitiveTypeKind.GeometryMultiLineString:
+                case EdmPrimitiveTypeKind.GeometryMultiPoint:
+                case EdmPrimitiveTypeKind.PrimitiveType:
+                case EdmPrimitiveTypeKind.None:
+                default:
+                    break;
+            }
+            throw Error.NotSupported();
+        }
+
+#if false // backup
+        public static IEdmExpression BuildDefaultExpression(IEdmTerm term)
         {
             if (term is EdmTerm edmTerm)
             {
-                return BuildDefaultValue(edmTerm.Type, edmTerm.DefaultValue);
+                return BuildDefaultEdmExpression(edmTerm.Type, edmTerm.DefaultValue);
             }
-
-            //if (term is CsdlSemanticsTerm csdlTerm)
-            //{
-
-            //}
-            
+            else if (term is CsdlSemanticsTerm csdlTerm)
+            {
+                return BuildDefaultCsdlExpression(csdlTerm.Type, csdlTerm.DefaultValue, term);
+            }
+            throw Error.NotSupported();
         }
-
-        private static CsdlExpressionBase GetDefaultExpression()
-        #endif
+#endif
     }
 }

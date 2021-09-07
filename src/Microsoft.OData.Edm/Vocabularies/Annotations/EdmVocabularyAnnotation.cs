@@ -71,7 +71,7 @@ namespace Microsoft.OData.Edm.Vocabularies
             this.target = target;
             this.term = term;
             this.qualifier = null;
-            this.value = BuildDefaultExpression(term.Type, term.DefaultValue);
+            this.value = BuildDefaultEdmExpression(term.Type, term.DefaultValue);
             this.usesDefault = true;
         }
 

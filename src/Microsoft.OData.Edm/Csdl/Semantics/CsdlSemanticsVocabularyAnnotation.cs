@@ -11,6 +11,7 @@ using System.Linq;
 using Microsoft.OData.Edm.Csdl.Parsing.Ast;
 using Microsoft.OData.Edm.Validation;
 using Microsoft.OData.Edm.Vocabularies;
+using static Microsoft.OData.Edm.Vocabularies.EdmTermExtensions;
 
 namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
 {
@@ -139,7 +140,7 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
 
             if (this.Annotation.Expression == null && termType != null)
             {
-                CsdlExpressionBase defaultExpBase = CreateDefaultExpression(termType, Term.DefaultValue);
+                CsdlExpressionBase defaultExpBase = BuildDefaultCsdlExpression(termType, Term.DefaultValue, (CsdlLocation) this.Annotation.Location);
                 
                 CsdlExpressionBase adjustedExp = AdjustStringConstantUsingTermType(defaultExpBase, termType);
                 return CsdlSemanticsModel.WrapExpression(adjustedExp, TargetBindingContext, this.Schema);
@@ -147,47 +148,6 @@ namespace Microsoft.OData.Edm.Csdl.CsdlSemantics
 
             CsdlExpressionBase adjustedExpression = AdjustStringConstantUsingTermType((this.Annotation).Expression, termType);
             return CsdlSemanticsModel.WrapExpression(adjustedExpression, TargetBindingContext, this.Schema);
-        }
-
-        private  CsdlExpressionBase CreateDefaultExpression(IEdmTypeReference expressionType, string defaultValue)
-        {
-            IEdmTypeReference termType = expressionType;
-            EdmTypeKind typeKind = termType.TypeKind();
-            switch (typeKind)
-            {
-                case EdmTypeKind.Primitive:
-                    IEdmPrimitiveTypeReference pritmitive = (IEdmPrimitiveTypeReference)termType;
-                    switch (pritmitive.PrimitiveKind())
-                    {
-                        case EdmPrimitiveTypeKind.String:
-                            return new CsdlConstantExpression(EdmValueKind.String, defaultValue, (CsdlLocation)this.Annotation.Location);
-                        case EdmPrimitiveTypeKind.Boolean:
-                            return new CsdlConstantExpression(EdmValueKind.Boolean, defaultValue, (CsdlLocation)this.Annotation.Location);
-                            // ...add more
-                        default:
-                            throw new Exception("NotSupported");
-                    }
-
-                case EdmTypeKind.Collection:
-                    //parse the json array to items and call this method again and again to get the each item
-                  //  return new CsdlCollectionExpression(....);
-
-                case EdmTypeKind.Entity:
-                case EdmTypeKind.Complex:
-                //    // 
-                   // return new CsdlRecordExpression(....);
-
-                case EdmTypeKind.Enum:
-                  //  return new CsdlEnumMemberExpression(...);
-
-                case EdmTypeKind.TypeDefinition:
-                // Get the underlying type from type defintiion
-                // call this method using underlying type
-
-                default:
-                    throw new Exception("Not supported");
-
-            }
         }
 
         private static CsdlExpressionBase AdjustStringConstantUsingTermType(CsdlExpressionBase expression, IEdmTypeReference termType)
